@@ -1715,7 +1715,7 @@ dependencies = [
  "snow 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-io 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "x25519-dalek 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zeroize 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "zeroize 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -5657,10 +5657,10 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "zeroize_derive 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "zeroize_derive 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -5675,7 +5675,7 @@ dependencies = [
 
 [[package]]
 name = "zeroize_derive"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -6127,6 +6127,6 @@ dependencies = [
 "checksum yamux 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "01bd67889938c48f0049fc60a77341039e6c3eaf16cb7693e6ead7c0ba701295"
 "checksum zeroize 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "8ddfeb6eee2fb3b262ef6e0898a52b7563bb8e0d5955a313b3cf2f808246ea14"
 "checksum zeroize 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e68403b858b6af538b11614e62dfe9ab2facba9f13a0cafb974855cfb495ec95"
-"checksum zeroize 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b60a6c572b91d8ecb0a460950d84fe5b40699edd07d65f73789b31237afc8f66"
+"checksum zeroize 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b60a6c572b91d8ecb0a460950d84fe5b40699edd07d65f73789b31237afc8f66"
 "checksum zeroize_derive 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b3f07490820219949839d0027b965ffdd659d75be9220c00798762e36c6cd281"
-"checksum zeroize_derive 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9dac4b660d969bff9c3fe1847a891cacaa8b21dd5f2aae6e0a3e0975aea96431"
+"checksum zeroize_derive 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9dac4b660d969bff9c3fe1847a891cacaa8b21dd5f2aae6e0a3e0975aea96431"
