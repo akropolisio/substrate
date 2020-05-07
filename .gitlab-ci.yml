@@ -63,12 +63,11 @@ test-linux-stable:
   tags:
     - linux-docker
   only:
-    - tags
     - master
     - schedules
     - web
+    - /^v[0-9]+\.[0-9]+.*$/        # i.e. v1.0, v2.1rc1
     - /^[0-9]+$/
-    - v1.0
   except:
     variables:
       - $DEPLOY_TAG
@@ -106,15 +105,9 @@ test-node-template:
 .build-only:                      &build-only
   only:
     - master
-    - tags
+    - schedules
     - web
-    - v1.0
-
-.build-only-doc:                      &build-only-doc
-  only:
-    - master
-    - tags
-    - web
+    - /^v[0-9]+\.[0-9]+.*$/        # i.e. v1.0, v2.1rc1
 
 
 #### stage:                        build
@@ -158,7 +151,7 @@ build-rust-doc-release:            &build
     expire_in:                     7 days
     paths:
     - ./crate-docs
-  <<:                              *build-only-doc
+  <<:                              *build-only
   tags:
     - linux-docker
   before_script:
@@ -166,7 +159,7 @@ build-rust-doc-release:            &build
     - ./scripts/build.sh
   script:
     - rm -f ./crate-docs/index.html # use it as an indicator if the job succeeds
-    - time cargo +nightly doc --release --verbose
+    - time cargo +nightly doc --release --all --verbose
     - cp -R ./target/doc ./crate-docs
     - echo "<meta http-equiv=refresh content=0;url=substrate_service/index.html>" > ./crate-docs/index.html
     - sccache -s
@@ -239,29 +232,48 @@ publish-s3-release:
     - aws s3 ls s3://${BUCKET}/${PREFIX}/latest${BRANCH}/
         --recursive --human-readable --summarize
 
-publish-s3-doc:
+
+
+publish-gh-doc:
   stage:                           publish
-  image:                           parity/awscli:latest
+  image:                           parity/tools:latest
   allow_failure:                   true
   dependencies:
     - build-rust-doc-release
   cache:                           {}
-  <<:                              *build-only-doc
+  <<:                              *build-only
   <<:                              *kubernetes-build
   variables:
     GIT_STRATEGY:                  none
-    BUCKET:                        "releases.parity.io"
-    PREFIX:                        "substrate-rustdoc"
+    GITHUB_API:                    "https://api.github.com"
   script:
     - test -r ./crate-docs/index.html || (
         echo "./crate-docs/index.html not present, build:rust:doc:release job not complete";
         exit 1
       )
-    - aws s3 sync --delete --size-only --only-show-errors
-        ./crate-docs/ s3://${BUCKET}/${PREFIX}/
+    - test "${GITHUB_USER}" -a "${GITHUB_EMAIL}" -a "${GITHUB_TOKEN}" || (
+        echo "environment variables for github insufficient";
+        exit 1
+      )
+    - |
+      cat > ${HOME}/.gitconfig <<EOC
+      [user]
+      name = "${GITHUB_USER}"
+      email = "${GITHUB_EMAIL}"
+
+      [url "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/"]
+      insteadOf = "https://github.com/"
+      EOC
+    - unset GITHUB_TOKEN
+    - git clone https://github.com/substrate-developer-hub/rustdocs.git
+    - rsync -ax --delete ./crate-docs/ ./rustdocs/${CI_COMMIT_REF_NAME}/
+    - cd ./rustdocs; git add .
+    - git commit -m "update rustdoc ${CI_COMMIT_REF_NAME}"
+    - git push origin master 2>&1 | sed -r "s|(${GITHUB_USER}):[a-f0-9]+@|\1:REDACTED@|g"
   after_script:
-    - aws s3 ls s3://${BUCKET}/${PREFIX}/
-        --human-readable --summarize
+    - rm -vrf ${HOME}/.gitconfig
+
+
 
 .deploy-template:                  &deploy
   stage:                           deploy

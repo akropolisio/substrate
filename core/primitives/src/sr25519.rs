@@ -22,9 +22,7 @@
 // end::description[]
 
 #[cfg(feature = "std")]
-use rand::rngs::OsRng;
-#[cfg(feature = "std")]
-use schnorrkel::{signing_context, Keypair, SecretKey, MiniSecretKey, PublicKey,
+use schnorrkel::{signing_context, ExpansionMode, Keypair, SecretKey, MiniSecretKey, PublicKey,
 	derive::{Derivation, ChainCode, CHAIN_CODE_LENGTH}
 };
 #[cfg(feature = "std")]
@@ -329,7 +327,7 @@ impl AsRef<Pair> for Pair {
 #[cfg(feature = "std")]
 impl From<MiniSecretKey> for Pair {
 	fn from(sec: MiniSecretKey) -> Pair {
-		Pair(sec.expand_to_keypair())
+		Pair(sec.expand_to_keypair(ExpansionMode::Uniform))
 	}
 }
 
@@ -364,7 +362,7 @@ impl AsRef<schnorrkel::Keypair> for Pair {
 /// Derive a single hard junction.
 #[cfg(feature = "std")]
 fn derive_hard_junction(secret: &SecretKey, cc: &[u8; CHAIN_CODE_LENGTH]) -> SecretKey {
-	secret.hard_derive_mini_secret_key(Some(ChainCode(cc.clone())), b"").0.expand()
+	secret.hard_derive_mini_secret_key(Some(ChainCode(cc.clone())), b"").0.expand(ExpansionMode::Uniform)
 }
 
 #[cfg(feature = "std")]
@@ -379,8 +377,7 @@ impl TraitPair for Pair {
 
 	/// Generate new secure (random) key pair.
 	fn generate() -> Pair {
-		let mut csprng: OsRng = OsRng::new().expect("os random generator works; qed");
-		let key_pair: Keypair = Keypair::generate(&mut csprng);
+		let key_pair: Keypair = Keypair::generate();
 		Pair(key_pair)
 	}
 
@@ -392,7 +389,7 @@ impl TraitPair for Pair {
 	fn from_seed(seed: Seed) -> Pair {
 		let mini_key: MiniSecretKey = MiniSecretKey::from_bytes(&seed[..])
 			.expect("32 bytes can always build a key; qed");
-		let kp = mini_key.expand_to_keypair();
+		let kp = mini_key.expand_to_keypair(ExpansionMode::Uniform);
 		Pair(kp)
 	}
 
@@ -414,7 +411,7 @@ impl TraitPair for Pair {
 			Ok(Pair(
 				MiniSecretKey::from_bytes(seed)
 					.map_err(|_| SecretStringError::InvalidSeed)?
-					.expand_to_keypair()
+					.expand_to_keypair(ExpansionMode::Uniform)
 			))
 		}
 	}
@@ -464,7 +461,7 @@ impl TraitPair for Pair {
 		match PublicKey::from_bytes(pubkey.as_ref().as_slice()) {
 			Ok(pk) => pk.verify(
 				signing_context(SIGNING_CTX).bytes(message.as_ref()), &signature
-			),
+			).is_ok(),
 			Err(_) => false,
 		}
 	}
@@ -478,7 +475,7 @@ impl TraitPair for Pair {
 		match PublicKey::from_bytes(pubkey.as_ref()) {
 			Ok(pk) => pk.verify(
 				signing_context(SIGNING_CTX).bytes(message.as_ref()), &signature
-			),
+			).is_ok(),
 			Err(_) => false,
 		}
 	}
@@ -493,7 +490,7 @@ impl Pair {
 	pub fn from_entropy(entropy: &[u8], password: Option<&str>) -> Pair {
 		let mini_key: MiniSecretKey = mini_secret_from_entropy(entropy, password.unwrap_or(""))
 			.expect("32 bytes can always build a key; qed");
-		let kp = mini_key.expand_to_keypair();
+		let kp = mini_key.expand_to_keypair(ExpansionMode::Uniform);
 		Pair(kp)
 	}
 }
