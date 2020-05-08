@@ -33,6 +33,7 @@ members = [
 	"core/network",
 	"core/panic-handler",
 	"core/primitives",
+	"core/substrate-bip39",
 	"core/rpc",
 	"core/rpc-servers",
 	"core/serializer",
